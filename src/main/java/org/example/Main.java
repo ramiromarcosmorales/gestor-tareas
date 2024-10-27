@@ -1,6 +1,5 @@
 package org.example;
 
-import javax.annotation.processing.Filer;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -10,6 +9,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+
+        cargarTarea();
 
         mostrarMenu();
 
@@ -27,7 +28,7 @@ public class Main {
 
     static File archivo = new File("tareas.txt");
 
-    private static List<Tarea> tareas = new ArrayList<>();
+    private static final List<Tarea> tareas = new ArrayList<>();
 
     /*
      - Mostrar Menu: Imprime el listado de opciones para interactuar con el sistema
@@ -53,35 +54,25 @@ public class Main {
     public static boolean procesarOpcion(Scanner sc) {
         int opcion = sc.nextInt();
         sc.nextLine();
-        switch(opcion) {
-            case 1:
-                agregarTarea(sc);
-                return false;
-            case 2:
-                listarTareas();
-                return false;
-            case 3:
-                completarTarea(sc);
-                return false;
-            case 4:
-                eliminarTarea(sc);
-                return false;
-            case 5:
-                filtrarTareas(sc);
-                return false;
-            case 6:
-                System.out.println("Gracias por usar el sistema de gestión de tareas!");
+        switch (opcion) {
+            case 1 -> agregarTarea(sc);
+            case 2 -> listarTareas();
+            case 3 -> completarTarea(sc);
+            case 4 -> eliminarTarea(sc);
+            case 5 -> filtrarTareas(sc);
+            case 6 -> {
+                System.out.println("Gracias por usar el sistema de gestion de tareas!");
                 return true;
-            default:
-                System.out.println("Opcion fuera de rango");
-                return false;
+            }
+            default -> System.out.println("Opcion invalida");
         }
+        return false;
     }
 
     public static void agregarTarea(Scanner sc) {
         String tarea = procesarString(sc, "Ingrese el nombre de la tarea a agregar:");
 
-        if (tarea != null & !tarea.isEmpty()) {
+        if (tarea != null && !tarea.isEmpty()) {
             Tarea nuevaTarea = new Tarea(tarea);
             tareas.add(nuevaTarea);
             guardarTarea();
@@ -104,13 +95,17 @@ public class Main {
     }
 
     public static void listarTareas() {
-        try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
-            String linea;
-            while ((linea = lector.readLine()) != null) {
-                System.out.println(linea);
+        if (verificarArrayListVacio()) {
+            System.out.println("No hay ninguna tarea ingresada en este momento!");
+        } else {
+            try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
+                String linea;
+                while ((linea = lector.readLine()) != null) {
+                    System.out.println(linea);
+                }
+            } catch (IOException e) {
+                System.out.println("Error al leer el archivo: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.out.println("Error al leer el archivo: " + e.getMessage());
         }
     }
 
@@ -119,7 +114,17 @@ public class Main {
             try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
                 String linea;
                 while ((linea = lector.readLine()) != null) {
-                    System.out.println(linea);
+                    String [] partes = linea.split(",");
+                    String tarea = partes[0].split(": ")[1];
+                    String estado = partes[1].split(": ")[1];
+
+                    Tarea nuevaTarea = new Tarea(tarea);
+                    tareas.add(nuevaTarea);
+
+
+                    if (estado.equalsIgnoreCase("Completado")) {
+                        nuevaTarea.marcarCompletada();
+                    }
                 }
             } catch (IOException e) {
                 System.out.println("Error al cargar tareas: " + e.getMessage());
@@ -131,26 +136,27 @@ public class Main {
         if (verificarArrayListVacio()) {
             System.out.println("No hay ninguna tarea ingresada en este momento!");
         } else {
-            System.out.println("Ingrese el indice de tarea a eliminar: (Recuerda que empieza desde 0)");
-            int index = procesarNumero(sc);
+            int index = procesarNumero(sc, "Ingrese el indice de tarea a eliminar: (Recuerda que empieza desde 0)");
 
             System.out.println("Se eliminó la tarea: " + tareas.get(index).getNombre());
             tareas.remove(index);
         }
+
+        guardarTarea();
     }
 
     public static void completarTarea(Scanner sc) {
         if (verificarArrayListVacio()) {
             System.out.println("No hay ninguna tarea ingresada en este momento!");
         } else {
-            System.out.println("Ingrese el num de tarea a cambiar su estado:");
-            int index = procesarNumero(sc);
+            int index = procesarNumero(sc, "Ingrese el num de tarea a cambiar su estado:");
 
             if (index >= 0 && index < tareas.size()) {
                 for (int i = 0; i < tareas.size(); i++) {
                     if (i == index) {
                         System.out.println("Tarea completada: " + tareas.get(i).getNombre());
                         tareas.get(i).marcarCompletada();
+                        guardarTarea();
                         break;
                     }
                 }
@@ -173,31 +179,36 @@ public class Main {
         System.out.println("Por favor, escriba la opcion:");
         int opcion = sc.nextInt();
 
-        for (int i = 0; i < tareas.size(); i++) {
-            if (opcion == 1) {
-                if (tareas.get(i).getEstado().equals("Completado")) {
-                    System.out.println(tareas.get(i).getNombre());
-                    System.out.println(tareas.get(i).getEstado());
-                }
-            } else if (opcion == 2) {
-                if (tareas.get(i).getEstado().equals("Pendiente")) {
-                    System.out.println(tareas.get(i).getNombre());
-                    System.out.println(tareas.get(i).getEstado());
-                }
-            } else {
-                System.out.println("Opcion invalida");
+        for (Tarea tarea : tareas) {
+            if (opcion == 1 && tarea.getEstado().equalsIgnoreCase("Completado")) {
+                    System.out.println(tarea.getNombre());
+                    System.out.println(tarea.getEstado());
+            } else if (opcion == 2 && tarea.getEstado().equalsIgnoreCase("Pendiente")) {
+                    System.out.println(tarea.getNombre());
+                    System.out.println(tarea.getEstado());
             }
         }
     }
 
-    public static int procesarNumero(Scanner sc) {
-        int num = sc.nextInt();
-        sc.nextLine();
+    public static int procesarNumero(Scanner sc, String mensaje) {
+        int num = 1;
+        boolean valido = false;
 
-        while (num < 0 || num >= tareas.size()) {
-            System.out.println("El numero ingresado esta fuera de rango, vuelve a reingresar:");
-            num = sc.nextInt();
-            sc.nextLine();
+        while (!valido) {
+            try {
+                System.out.println(mensaje);
+                num = sc.nextInt();
+                sc.nextLine();
+
+                if (num >= 0 && num < tareas.size()) {
+                    valido = true;
+                } else {
+                    System.out.println("Indice fuera de rango. Intentalo de nuevo.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Error: Entrada inválida!");
+                sc.nextLine();
+            }
         }
         return num;
     }
