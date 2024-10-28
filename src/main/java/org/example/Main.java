@@ -95,13 +95,15 @@ public class Main {
     }
 
     public static void listarTareas() {
+        int contador = 0;
         if (verificarArrayListVacio()) {
             System.out.println("No hay ninguna tarea ingresada en este momento!");
         } else {
             try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
                 String linea;
                 while ((linea = lector.readLine()) != null) {
-                    System.out.println(linea);
+                    System.out.println(linea + ", Indice: " + contador);
+                    contador++;
                 }
             } catch (IOException e) {
                 System.out.println("Error al leer el archivo: " + e.getMessage());
@@ -178,14 +180,15 @@ public class Main {
 
         System.out.println("Por favor, escriba la opcion:");
         int opcion = sc.nextInt();
+        int contador = 0;
 
         for (Tarea tarea : tareas) {
             if (opcion == 1 && tarea.getEstado().equalsIgnoreCase("Completado")) {
-                    System.out.println(tarea.getNombre());
-                    System.out.println(tarea.getEstado());
+                System.out.println("Nombre de la tarea: " + tarea.getNombre() + ", Estado: " + tarea.getEstado() + ", Indice: " + contador);
+                contador++;
             } else if (opcion == 2 && tarea.getEstado().equalsIgnoreCase("Pendiente")) {
-                    System.out.println(tarea.getNombre());
-                    System.out.println(tarea.getEstado());
+                System.out.println("Nombre de la tarea: " + tarea.getNombre() + ", Estado: " + tarea.getEstado() + ", Indice: " + contador);
+                contador++;
             }
         }
     }

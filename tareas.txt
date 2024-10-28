@@ -1,2 +1,4 @@
-Nombre de la tarea: Ir a ver a Duketo, Estado: Completado
-Nombre de la tarea: Ir a ver a Miami, Estado: Pendiente
+Nombre de la tarea: Ir a ver a Duko, Estado: Pendiente
+Nombre de la tarea: Ir a ver a Yuki, Estado: Pendiente
+Nombre de la tarea: Ir a ver a Perez, Estado: Pendiente
+Nombre de la tarea: Ir a ver a Tsunoda, Estado: Pendiente
